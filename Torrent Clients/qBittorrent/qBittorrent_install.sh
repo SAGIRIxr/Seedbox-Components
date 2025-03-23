@@ -1,5 +1,5 @@
 ## List of qBittorrent Version that is supported
-declare -a qb_ver_list=("4.1.9" "4.1.9.1" "4.2.5" "4.3.8" "4.3.9" "4.4.5" "4.5.5" "4.6.3" "4.6.5" "4.6.5.1" "4.6.5.2")
+declare -a qb_ver_list=("4.1.9" "4.1.9.1" "4.3.8" "4.3.9" "4.6.7" "5.0.4")
 #Generate the list of qBittorrent Version that is supported
 unset qb_name_list i
 for i in "${qb_ver_list[@]}"
@@ -7,7 +7,7 @@ do
 	qb_name_list+=("qBittorrent-$i")
 done
 ## List of libtorrent Version that is supported
-declare -a lib_ver_list=("1_1_14" "v1.2.14" "v1.2.19" "v2.0.10")
+declare -a lib_ver_list=("1_1_14" "v1.2.14" "v1.2.19" "v1.2.20")
 #Generate the list of libtorrent Version that is supported
 unset lib_name_list i
 for i in "${lib_ver_list[@]}"
@@ -135,6 +135,19 @@ lib_ver_check(){
 				break
 			fi
 		done
+	elif [[ "${qb_ver}" =~ "5.0." ]]; then
+		while true
+		do
+			if [[ ! "${lib_ver}" =~ "libtorrent-v1.2." ]] && [[ ! "${lib_ver}" =~ "libtorrent-v2.0." ]]; then
+				tput sgr0; clear
+				warn "qBittorrent $qb_ver is not compatible with libtorrent $lib_ver"
+				warn "qBittorrent $qb_ver is compatible with libtorrent-v1.2.x or libtorrent-v2.0.x only"
+				warn "Please choose a compatible version"
+				lib_ver_choose
+			else
+				break
+			fi
+		done
 	fi
 }
 
@@ -218,7 +231,6 @@ After=network.target
 Type=forking
 User=$username
 LimitNOFILE=infinity
-ExecStartPre=/bin/sh -c 'echo "30" > /dev/shm/announce.txt'
 ExecStart=/usr/bin/qbittorrent-nox -d
 ExecStop=/usr/bin/killall -w -s 9 /usr/bin/qbittorrent-nox
 Restart=on-failure
@@ -320,7 +332,7 @@ WebUI\Port=$qb_port
 WebUI\Username=$username
 EOF
 	rm qb_password_gen
-    elif [[ "${qb_ver}" =~ "4.4."|"4.5."|"4.6." ]]; then
+    elif [[ "${qb_ver}" =~ "4.4."|"4.5."|"4.6."|"5.0." ]]; then
         wget  https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/Torrent%20Clients/qBittorrent/$arch/qb_password_gen -O $HOME/qb_password_gen && chmod +x $HOME/qb_password_gen
         #Check if the download is successful
 		if [ $? -ne 0 ]; then

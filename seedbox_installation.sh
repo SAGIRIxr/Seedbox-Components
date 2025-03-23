@@ -988,6 +988,140 @@ EOF
 	return 0
 }
 
+install_bbry_() {
+	#Check if $OS is Set
+	if [[ -z $OS ]]; then
+		# Linux Distro Version check
+		if [ -f /etc/os-release ]; then
+			. /etc/os-release
+			OS=$NAME
+		elif type lsb_release >/dev/null 2>&1; then
+			OS=$(lsb_release -si)
+		elif [ -f /etc/lsb-release ]; then
+			. /etc/lsb-release
+			OS=$DISTRIB_ID
+		elif [ -f /etc/debian_version ]; then
+			OS=Debian
+		else
+			OS=$(uname -s)
+			VER=$(uname -r)
+		fi
+	fi
+	if [[ "$OS" =~ "Debian" ]]; then
+		if [ $(uname -m) == "x86_64" ]; then
+			apt-get -y install linux-image-amd64 linux-headers-amd64
+			if [ $? -ne 0 ]; then
+				fail "BBRy installation failed"
+				return 1
+			fi
+		elif [ $(uname -m) == "aarch64" ]; then
+			apt-get -y install linux-image-arm64 linux-headers-arm64
+			if [ $? -ne 0 ]; then
+				fail "BBRy installation failed"
+				return 1
+			fi
+		fi
+	elif [[ "$OS" =~ "Ubuntu" ]]; then
+		apt-get -y install linux-image-generic linux-headers-generic
+		if [ $? -ne 0 ]; then
+			fail "BBRy installation failed"
+			return 1
+		fi
+	else
+		fail "Unsupported OS"
+		return 1
+	fi
+	wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/BBRy.sh && chmod +x BBRy.sh
+	# Check if download fail
+	if [ ! -f BBRy.sh ]; then
+		fail "BBRy download failed"
+		return 1
+	fi
+    ## Install tweaked BBR automatically on reboot
+    cat << EOF > /etc/systemd/system/bbrinstall.service
+[Unit]
+Description=BBRinstall
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/BBRy.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl enable bbrinstall.service
+	return 0
+}
+
+install_bbrz_() {
+	#Check if $OS is Set
+	if [[ -z $OS ]]; then
+		# Linux Distro Version check
+		if [ -f /etc/os-release ]; then
+			. /etc/os-release
+			OS=$NAME
+		elif type lsb_release >/dev/null 2>&1; then
+			OS=$(lsb_release -si)
+		elif [ -f /etc/lsb-release ]; then
+			. /etc/lsb-release
+			OS=$DISTRIB_ID
+		elif [ -f /etc/debian_version ]; then
+			OS=Debian
+		else
+			OS=$(uname -s)
+			VER=$(uname -r)
+		fi
+	fi
+	if [[ "$OS" =~ "Debian" ]]; then
+		if [ $(uname -m) == "x86_64" ]; then
+			apt-get -y install linux-image-amd64 linux-headers-amd64
+			if [ $? -ne 0 ]; then
+				fail "BBRz installation failed"
+				return 1
+			fi
+		elif [ $(uname -m) == "aarch64" ]; then
+			apt-get -y install linux-image-arm64 linux-headers-arm64
+			if [ $? -ne 0 ]; then
+				fail "BBRz installation failed"
+				return 1
+			fi
+		fi
+	elif [[ "$OS" =~ "Ubuntu" ]]; then
+		apt-get -y install linux-image-generic linux-headers-generic
+		if [ $? -ne 0 ]; then
+			fail "BBRz installation failed"
+			return 1
+		fi
+	else
+		fail "Unsupported OS"
+		return 1
+	fi
+	wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/BBRz.sh && chmod +x BBRz.sh
+	# Check if download fail
+	if [ ! -f BBRz.sh ]; then
+		fail "BBRz download failed"
+		return 1
+	fi
+    ## Install tweaked BBR automatically on reboot
+    cat << EOF > /etc/systemd/system/bbrinstall.service
+[Unit]
+Description=BBRinstall
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/BBRz.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl enable bbrinstall.service
+	return 0
+}
+
 install_bbrv3_() {
 	fail "BBRv3 is not supported now!"
 	return 1
