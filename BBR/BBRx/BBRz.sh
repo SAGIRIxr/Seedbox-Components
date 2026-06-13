@@ -2,6 +2,8 @@
 echo "----BBRz Install----"
 sleep 10s
 ## Installing BBR
+# systemd oneshot service starts with no HOME set; anchor it before the HOME-based paths below
+HOME="${HOME:-/root}"
 cd $HOME
 
 ## This part of the script is modified from https://github.com/KozakaiAya/TCP_BBR
@@ -68,7 +70,7 @@ if [ ! -f /usr/src/linux-headers-$(uname -r)/.config ]; then
 fi
 
 #bbrz
-wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/tcp_bbrz.c
+wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/tcp_bbrz.c
 if [ ! -f $HOME/tcp_bbrz.c ]; then
 	echo "Error: Download failed! Exiting." >&2
 	exit 1

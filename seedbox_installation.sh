@@ -1030,7 +1030,7 @@ install_bbrx_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/BBRx.sh && chmod +x BBRx.sh
+	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRx.sh && chmod +x BBRx.sh
 	# Check if download fail
 	if [ ! -f BBRx.sh ]; then
 		fail "BBR download failed"
@@ -1097,7 +1097,7 @@ install_bbry_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/BBRy.sh && chmod +x BBRy.sh
+	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRy.sh && chmod +x BBRy.sh
 	# Check if download fail
 	if [ ! -f BBRy.sh ]; then
 		fail "BBRy download failed"
@@ -1164,7 +1164,7 @@ install_bbrz_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRx/BBRz.sh && chmod +x BBRz.sh
+	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRz.sh && chmod +x BBRz.sh
 	# Check if download fail
 	if [ ! -f BBRz.sh ]; then
 		fail "BBRz download failed"
@@ -1192,18 +1192,18 @@ install_bbrv3_() {
 	fail "BBRv3 is not supported now!"
 	return 1
 	if [ $(uname -m) == "x86_64" ]; then
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-headers-6.4.0+-amd64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-headers-6.4.0+-amd64.deb
 		if [ ! -f linux-headers-6.4.0+-amd64.deb ]; then
 			fail "BBRv3 download failed"
 			return 1
 		fi
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-image-6.4.0+-amd64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-image-6.4.0+-amd64.deb
 		if [ ! -f linux-image-6.4.0+-amd64.deb ]; then
 			fail "BBRv3 download failed"
 			rm linux-headers-6.4.0+-amd64.deb
 			return 1
 		fi
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-libc-dev_-6.4.0-amd64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/x86_64/linux-libc-dev_-6.4.0-amd64.deb
 		if [ ! -f linux-libc-dev_-6.4.0-amd64.deb ]; then
 			fail "BBRv3 download failed"
 			rm linux-headers-6.4.0+-amd64.deb linux-image-6.4.0+-amd64.deb
@@ -1213,18 +1213,18 @@ install_bbrv3_() {
 		# Clean up
 		rm linux-headers-6.4.0+-amd64.deb linux-image-6.4.0+-amd64.deb linux-libc-dev_-6.4.0-amd64.deb
 	elif [ $(uname -m) == "aarch64" ]; then
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-headers-6.4.0+-arm64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-headers-6.4.0+-arm64.deb
 		if [ ! -f linux-headers-6.4.0+-arm64.deb ]; then
 			fail "BBRv3 download failed"
 			return 1
 		fi
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-image-6.4.0+-arm64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-image-6.4.0+-arm64.deb
 		if [ ! -f linux-image-6.4.0+-arm64.deb ]; then
 			fail "BBRv3 download failed"
 			rm linux-headers-6.4.0+-arm64.deb
 			return 1
 		fi
-		wget https://raw.githubusercontent.com/guowanghushifu/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-libc-dev_-6.4.0-arm64.deb
+		wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRv3/ARM64/linux-libc-dev_-6.4.0-arm64.deb
 		if [ ! -f linux-libc-dev_-6.4.0-arm64.deb ]; then
 			fail "BBRv3 download failed"
 			rm linux-headers-6.4.0+-arm64.deb linux-image-6.4.0+-arm64.deb
