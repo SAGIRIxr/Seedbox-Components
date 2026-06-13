@@ -636,6 +636,13 @@ kernel_settings_() {
 		fail "Kernel settings not set"
 		return 1
 	fi
+    # Preserve an already-configured tweaked BBR congestion control (bbrx/bbry/bbrz)
+    # so that re-running the installer does not silently revert it back to plain bbr.
+    bbr_cc=bbr
+    _cur_cc=$(sed -n 's/^[[:space:]]*net\.ipv4\.tcp_congestion_control[[:space:]]*=[[:space:]]*//p' /etc/sysctl.conf 2>/dev/null | tail -n1)
+    case "$_cur_cc" in
+        bbrx|bbry|bbrz) bbr_cc=$_cur_cc ;;
+    esac
     cat << EOF >/etc/sysctl.conf
 ###/proc/sys/kernel/ Variables:
 ##https://www.kernel.org/doc/Documentation/admin-guide/sysctl/kernel.rst
@@ -650,10 +657,12 @@ kernel.msgmnb = 65536
 kernel.msgmax = 65536
 
 ## Process Scheduler Optimization
-kernel.sched_migration_cost_ns = 5000000
+# NOTE: sched_migration_cost_ns / sched_min_granularity_ns / sched_wakeup_granularity_ns
+# require a kernel built with CONFIG_SCHED_DEBUG, which stock Debian/Ubuntu kernels do
+# not enable (and the granularity knobs were removed entirely in kernel 6.6 / EEVDF).
+# Listing them here makes "sysctl -p" print "cannot stat" errors on every run, so only
+# the universally-available autogroup knob is kept.
 kernel.sched_autogroup_enabled = 0
-kernel.sched_min_granularity_ns = 10000000
-kernel.sched_wakeup_granularity_ns = 15000000
 
 
 
@@ -970,7 +979,7 @@ net.ipv4.tcp_limit_output_bytes = 3276800
 
 # Congestion Control
 net.core.default_qdisc = fq
-net.ipv4.tcp_congestion_control = bbr
+net.ipv4.tcp_congestion_control = $bbr_cc
 EOF
     sysctl -p
 	return 0
