@@ -1030,9 +1030,12 @@ install_bbrx_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRx.sh && chmod +x BBRx.sh
+	# Download to an absolute path: the service below runs /root/BBRx.sh, so relying on
+	# the caller's working directory silently breaks the boot-time install whenever the
+	# installer is not started from /root (e.g. run from a systemd unit, where cwd is /).
+	wget -O /root/BBRx.sh https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRx.sh && chmod +x /root/BBRx.sh
 	# Check if download fail
-	if [ ! -f BBRx.sh ]; then
+	if [ ! -f /root/BBRx.sh ]; then
 		fail "BBR download failed"
 		return 1
 	fi
@@ -1044,6 +1047,8 @@ After=network.target
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
+Environment=HOME=/root
 ExecStart=/root/BBRx.sh
 RemainAfterExit=true
 
@@ -1097,9 +1102,10 @@ install_bbry_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRy.sh && chmod +x BBRy.sh
+	# Download to an absolute path, see the note in install_bbrx_.
+	wget -O /root/BBRy.sh https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRy.sh && chmod +x /root/BBRy.sh
 	# Check if download fail
-	if [ ! -f BBRy.sh ]; then
+	if [ ! -f /root/BBRy.sh ]; then
 		fail "BBRy download failed"
 		return 1
 	fi
@@ -1111,6 +1117,8 @@ After=network.target
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
+Environment=HOME=/root
 ExecStart=/root/BBRy.sh
 RemainAfterExit=true
 
@@ -1164,9 +1172,10 @@ install_bbrz_() {
 		fail "Unsupported OS"
 		return 1
 	fi
-	wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRz.sh && chmod +x BBRz.sh
+	# Download to an absolute path, see the note in install_bbrx_.
+	wget -O /root/BBRz.sh https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/BBRz.sh && chmod +x /root/BBRz.sh
 	# Check if download fail
-	if [ ! -f BBRz.sh ]; then
+	if [ ! -f /root/BBRz.sh ]; then
 		fail "BBRz download failed"
 		return 1
 	fi
@@ -1178,6 +1187,8 @@ After=network.target
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
+Environment=HOME=/root
 ExecStart=/root/BBRz.sh
 RemainAfterExit=true
 
