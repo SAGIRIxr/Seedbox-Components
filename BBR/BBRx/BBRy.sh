@@ -70,7 +70,25 @@ if [ ! -f /usr/src/linux-headers-$(uname -r)/.config ]; then
 fi
 
 #bbry
-wget https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/tcp_bbry.c
+if [ ! -r /etc/os-release ]; then
+    echo "Error: Unsupported OS, /etc/os-release not found" >&2
+    exit 1
+fi
+
+. /etc/os-release
+case "$ID:${VERSION_ID%%.*}" in
+    debian:12)
+        bbry_source_url="https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/tcp_bbry.c"
+        ;;
+    debian:13)
+        bbry_source_url="https://raw.githubusercontent.com/SAGIRIxr/Seedbox-Components/main/BBR/BBRx/tcp_bbry_debian13.c"
+        ;;
+    *)
+        echo "Error: Unsupported OS, only Debian 12 and Debian 13 are supported" >&2
+        exit 1
+        ;;
+esac
+wget -O $HOME/tcp_bbry.c "$bbry_source_url"
 if [ ! -f $HOME/tcp_bbry.c ]; then
 	echo "Error: Download failed! Exiting." >&2
 	exit 1
