@@ -1,0 +1,83 @@
+name: BBR build check
+
+# The BBR modules are only ever compiled on the target machine at first boot, so a
+# source that no longer matches the kernel API fails silently inside dkms and the
+# installer just prints "FAIL". Compile every algo against real Debian headers here
+# instead, where the error is visible.
+
+on:
+  push:
+    paths:
+      - 'BBR/BBRx/**'
+      - '.github/workflows/bbr-build.yml'
+  pull_request:
+    paths:
+      - 'BBR/BBRx/**'
+      - '.github/workflows/bbr-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.algo }} on Debian ${{ matrix.debian }}
+    runs-on: ubuntu-latest
+    container: debian:${{ matrix.debian }}
+    strategy:
+      fail-fast: false
+      matrix:
+        debian: ['12', '13']
+        algo: [bbrx, bbry, bbrz]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and kernel headers
+        run: |
+          set -eux
+          apt-get update
+          apt-get -y install --no-install-recommends \
+            build-essential libelf-dev bc kmod linux-headers-amd64
+
+      - name: Resolve source for this Debian release
+        id: src
+        run: |
+          set -eux
+          if [ "${{ matrix.debian }}" = "13" ]; then
+            src="BBR/BBRx/tcp_${{ matrix.algo }}_debian13.c"
+          else
+            src="BBR/BBRx/tcp_${{ matrix.algo }}.c"
+          fi
+          test -f "$src"
+          echo "path=$src" >> "$GITHUB_OUTPUT"
+
+      - name: Build module
+        run: |
+          set -eux
+          kdir=$(ls -d /usr/src/linux-headers-*-amd64 | head -n1)
+          test -f "$kdir/Makefile"
+          mkdir -p /tmp/build/src
+          cp "${{ steps.src.outputs.path }}" /tmp/build/src/tcp_${{ matrix.algo }}.c
+          echo 'obj-m := tcp_${{ matrix.algo }}.o' > /tmp/build/src/Makefile
+          make -C "$kdir" M=/tmp/build/src modules
+          test -f /tmp/build/src/tcp_${{ matrix.algo }}.ko
+
+      - name: Report module info
+        run: modinfo /tmp/build/src/tcp_${{ matrix.algo }}.ko
+
+  shellcheck:
+    name: Shell syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: bash -n every script
+        run: |
+          set -eu
+          rc=0
+          while IFS= read -r f; do
+            if bash -n "$f"; then
+              echo "ok   $f"
+            else
+              echo "FAIL $f"
+              rc=1
+            fi
+          done < <(find . -name '*.sh' -not -path './.git/*')
+          exit $rc
