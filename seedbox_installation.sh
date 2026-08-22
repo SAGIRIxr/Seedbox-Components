@@ -497,7 +497,9 @@ set_ring_buffer_() {
 }
 set_txqueuelen_() {
 	interface=$(ip -o -4 route show to default | awk '{print $5}')
-	if [ -z $(which net-tools) ]; then
+	# net-tools is the package name, not a command: `which net-tools` never resolves,
+	# so the old check reinstalled the package on every run. Probe the binary instead.
+	if ! command -v ifconfig > /dev/null 2>&1; then
 		apt-get -y install net-tools
 		if [ $? -ne 0 ]; then
 			fail "net-tools Installation Failed"
