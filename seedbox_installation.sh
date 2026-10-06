@@ -54,9 +54,25 @@ seperator() {
 }
 
 
+## 以“绝不等待终端输入”的方式运行 apt-get。
+## 背景：install_bbrx_/bbry_/bbrz_ 里的 apt-get 经常会顺带装进一个比当前运行版本更新的内核。
+## Debian 12/13 常见的 needrestart 会在 apt 的 DPkg::Post-Invoke 钩子里检测到这一点，然后弹出
+## “Pending kernel upgrade”/“Which services should be restarted?” 的 debconf 对话框等人按 OK。
+## 上游 Install.sh 的 install_ 把 stdout 送进 /dev/null、stderr 送进错误日志，但 stdin 仍是终端，
+## needrestart 据此认定自己处于交互环境：对话框被画到已丢弃的输出上，用户只看到
+## “Installing BBRz” 之后再无动静，直到 SSH 空闲超时断开，安装随之中断。
+## 三重保险：DEBIAN_FRONTEND=noninteractive 让 debconf/needrestart 不提问；
+## NEEDRESTART_SUSPEND=1 让 needrestart 在 apt 钩子里直接退出；stdin 接 /dev/null 兜底，
+## 任何残余的读终端操作都会立即拿到 EOF 而不是永远阻塞。
+apt_noninteractive_() {
+    DEBIAN_FRONTEND=noninteractive NEEDRESTART_SUSPEND=1 NEEDRESTART_MODE=l \
+    apt-get -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "$@" < /dev/null
+}
+
 ## System Update and Install Dependencies
 update() {
-    apt-get -qqy update && apt-get -qqy upgrade
+    # upgrade 同样可能带进新内核并触发 needrestart 对话框，见 apt_noninteractive_ 的说明
+    apt-get -qqy update && apt_noninteractive_ -qqy upgrade
 
     # Install Dependencies
 	if [ -z $(which sudo) ]; then
@@ -1010,20 +1026,21 @@ install_bbrx_() {
 	fi
 	if [[ "$OS" =~ "Debian" ]]; then
 		if [ $(uname -m) == "x86_64" ]; then
-			apt-get -y install linux-image-amd64 linux-headers-amd64
+			# 内核安装必须走 apt_noninteractive_：否则 needrestart 的对话框会让 SSH 会话里的安装无声卡死
+			apt_noninteractive_ -y install linux-image-amd64 linux-headers-amd64
 			if [ $? -ne 0 ]; then
 				fail "BBR installation failed"
 				return 1
 			fi
 		elif [ $(uname -m) == "aarch64" ]; then
-			apt-get -y install linux-image-arm64 linux-headers-arm64
+			apt_noninteractive_ -y install linux-image-arm64 linux-headers-arm64
 			if [ $? -ne 0 ]; then
 				fail "BBR installation failed"
 				return 1
 			fi
 		fi
 	elif [[ "$OS" =~ "Ubuntu" ]]; then
-		apt-get -y install linux-image-generic linux-headers-generic
+		apt_noninteractive_ -y install linux-image-generic linux-headers-generic
 		if [ $? -ne 0 ]; then
 			fail "BBR installation failed"
 			return 1
@@ -1082,20 +1099,20 @@ install_bbry_() {
 	fi
 	if [[ "$OS" =~ "Debian" ]]; then
 		if [ $(uname -m) == "x86_64" ]; then
-			apt-get -y install linux-image-amd64 linux-headers-amd64
+			apt_noninteractive_ -y install linux-image-amd64 linux-headers-amd64
 			if [ $? -ne 0 ]; then
 				fail "BBRy installation failed"
 				return 1
 			fi
 		elif [ $(uname -m) == "aarch64" ]; then
-			apt-get -y install linux-image-arm64 linux-headers-arm64
+			apt_noninteractive_ -y install linux-image-arm64 linux-headers-arm64
 			if [ $? -ne 0 ]; then
 				fail "BBRy installation failed"
 				return 1
 			fi
 		fi
 	elif [[ "$OS" =~ "Ubuntu" ]]; then
-		apt-get -y install linux-image-generic linux-headers-generic
+		apt_noninteractive_ -y install linux-image-generic linux-headers-generic
 		if [ $? -ne 0 ]; then
 			fail "BBRy installation failed"
 			return 1
@@ -1152,20 +1169,20 @@ install_bbrz_() {
 	fi
 	if [[ "$OS" =~ "Debian" ]]; then
 		if [ $(uname -m) == "x86_64" ]; then
-			apt-get -y install linux-image-amd64 linux-headers-amd64
+			apt_noninteractive_ -y install linux-image-amd64 linux-headers-amd64
 			if [ $? -ne 0 ]; then
 				fail "BBRz installation failed"
 				return 1
 			fi
 		elif [ $(uname -m) == "aarch64" ]; then
-			apt-get -y install linux-image-arm64 linux-headers-arm64
+			apt_noninteractive_ -y install linux-image-arm64 linux-headers-arm64
 			if [ $? -ne 0 ]; then
 				fail "BBRz installation failed"
 				return 1
 			fi
 		fi
 	elif [[ "$OS" =~ "Ubuntu" ]]; then
-		apt-get -y install linux-image-generic linux-headers-generic
+		apt_noninteractive_ -y install linux-image-generic linux-headers-generic
 		if [ $? -ne 0 ]; then
 			fail "BBRz installation failed"
 			return 1

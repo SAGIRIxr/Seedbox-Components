@@ -1,6 +1,9 @@
 #!/bin/bash
 echo "----BBRz Install----"
 sleep 10s
+# 下面的 apt-get 可能带进新内核；在 SSH 里手工运行时，needrestart 会弹出 debconf 对话框等人按 OK。
+# 这里统一声明非交互，保证脚本无论由 systemd 还是由人在终端里启动都不会停下来等输入。
+export DEBIAN_FRONTEND=noninteractive NEEDRESTART_SUSPEND=1 NEEDRESTART_MODE=l
 ## Installing BBR
 cd $HOME
 
